@@ -3,15 +3,31 @@ safefileshare
 
 Simple app to share files protected by password.
 
-.. image:: https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg
-     :target: https://github.com/pydanny/cookiecutter-django/
-     :alt: Built with Cookiecutter Django
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-     :target: https://github.com/ambv/black
-     :alt: Black code style
-
+KickStarted with:  https://github.com/pydanny/cookiecutter-django/
 
 :License: MIT
+
+
+Specks
+
+1. Transfer files and URL addresses in a secure way.
+2. For logged-in users the form accepting the file or the URL that we want to protect.
+After sending it to the user, the generated new unique address (within the application) and the generated password should be displayed.
+The generated link should be valid for 24 hours.
+This part should be covered by tests.
+3. After clicking generated link, you should see a form that allows you to enter your password.
+If it is compatible with the password generated in the database, then the user is redirected to a protected URL or to download process of the protected file.
+The number of correct password additions should be counted for each link.
+4. For each logged-in user, the User Agent from which he made the last query, should be remembered, i.e.
+refreshed with each request sent, to any sub-page within the system (User Agent is available in the request header).
+5. It should also be possible to manage the application using the admin panel,
+in particular changing the password assigned to the element.
+6. The application also provides APIs similar to created forms,
+a secured part for adding new elements, and an unsecured one to enter the password.
+7. In addition, a secured endpoint should be created to provide information
+on the number of items of each type, added every day, that have been visited at least once (see example).
+
+Tech: Django + Django Rest + Django forms
 
 
 Settings
@@ -23,6 +39,17 @@ Moved to settings_.
 
 Basic Commands
 --------------
+
+Docker
+^^^^^^
+To run docker use:
+
+::
+
+    $ docker-compose -f local.yml build
+    $ docker-compose -f local.yml up
+
+
 
 Setting Up Your Users
 ^^^^^^^^^^^^^^^^^^^^^
