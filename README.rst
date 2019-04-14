@@ -49,6 +49,12 @@ To run docker use:
     $ docker-compose -f local.yml build
     $ docker-compose -f local.yml up
 
+Migrations:
+
+::
+
+    $ docker-compose -f local.yml run --rm django python manage.py makemigrations
+
 
 
 Setting Up Your Users
