@@ -1,3 +1,6 @@
+from datetime import datetime
+from dateutil.tz import tzutc
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files.storage import FileSystemStorage
@@ -19,12 +22,16 @@ class FileDetailView(DetailView):
 
     def post(self, request, secret_link):
         secret = SafeSecret.objects.get(secret_link=secret_link)
-        check_passs = check_password(request.POST.get('password'), secret.password_hash)
-        if check_passs:
+        print(datetime.now(tz=tzutc()), secret.upload_date)
+        time_delta = datetime.now(tz=tzutc()) - secret.upload_date
+        if time_delta.days > 1:
+            messages.error(request, 'Link expired')
+        elif check_password(request.POST.get('password'), secret.password_hash):
             secret.downloads += 1
             secret.save()
             return redirect(secret.file or secret.link)
-        messages.error(request, 'Wrong Password')
+        else:
+            messages.error(request, 'Wrong Password')
         return super().get(request, secret_link)
 
     def get_context_data(self, **kwargs):
@@ -53,32 +60,29 @@ class FileUploadView(LoginRequiredMixin, FormView):
     def get_success_url(self):
         return reverse("file:list")
 
-    def post(self, request):
-        secret_file = request.FILES.get('secret_file')
-        secret_link = request.POST.get('secret_link')
-        secret_pass = request.POST.get('secret_password')
-        current_user = request.user
+    def get_fail_url(self):
+        return reverse("file:upload")
+
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        messages.error(self.request, "You need to provide file or link, but not both.")
+        return response
+
+    def form_valid(self, form):
+        data = form.cleaned_data
+        secret_file = data.get('secret_file')
+        current_user = self.request.user
         if secret_file:
             fs = FileSystemStorage()
             filename = fs.save(secret_file.name, secret_file)
             secret_file = fs.url(filename)
-        new_secret = SafeSecret(
+        SafeSecret(
             user=current_user,
-            link=secret_link,
+            link=data.get('secret_link'),
             file=secret_file,
-            password_hash=make_password(secret_pass)
-        )
-        new_secret.save()
+            password_hash=make_password(data.get('secret_password'))
+        ).save()
         return redirect(self.get_success_url())
-
-    def form_valid(self, form):
-        print('yey')
-        valid = super().form_valid(form)
-        print(valid)
-        if not valid:
-            messages.error("You need to provide file or link")
-        return valid
-
 
 
 file_upload_view = FileUploadView.as_view()

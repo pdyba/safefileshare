@@ -1,4 +1,5 @@
 from django import forms
+from django.forms import ValidationError
 
 
 class UploadFileForm(forms.Form):
@@ -10,11 +11,13 @@ class UploadFileForm(forms.Form):
         widget=forms.PasswordInput()
     )
 
-    def validate(self, value):
-        super().validate(value)
-        if not self.secret_link and not self.secret_file:
+    def is_valid(self):
+        valid = super().is_valid()
+        form_data = self.cleaned_data
+        check = [form_data.get("secret_link"), form_data.get("secret_file")]
+        if all(check) or not any(check):
             return False
-        return True
+        return valid
 
 
 class GetSecretForm(forms.Form):
