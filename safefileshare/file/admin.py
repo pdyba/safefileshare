@@ -1,9 +1,11 @@
-# from django.contrib.auth import admin as auth_admin
-#
-# class FileAdmin(auth_admin.UserAdmin):
-#
-#     form = UserChangeForm
-#     add_form = UserCreationForm
-#     fieldsets = (("User", {"fields": ("name",)}),) + auth_admin.UserAdmin.fieldsets
-#     list_display = ["username", "name", "is_superuser"]
-#     search_fields = ["name"]
+from django.contrib import admin
+
+from safefileshare.file.forms import SetPasswordForm
+from safefileshare.file.models import SafeSecret
+
+
+@admin.register(SafeSecret)
+class FileAdmin(admin.ModelAdmin):
+    form = SetPasswordForm
+    list_display = ["user", "secret_link", "downloads", "link", "file"]
+
