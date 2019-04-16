@@ -8,4 +8,3 @@ from safefileshare.file.models import SafeSecret
 class FileAdmin(admin.ModelAdmin):
     form = SetPasswordForm
     list_display = ["user", "secret_link", "downloads", "link", "file"]
-

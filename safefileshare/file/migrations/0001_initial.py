@@ -10,30 +10,47 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-    ]
+    dependencies = [migrations.swappable_dependency(settings.AUTH_USER_MODEL)]
 
     operations = [
         migrations.CreateModel(
-            name='SafeSecret',
+            name="SafeSecret",
             fields=[
-                ('secret_link', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
-                ('password_hash', models.CharField(max_length=255)),
-                ('downloads', models.IntegerField(default=0)),
-                ('upload_date', models.DateTimeField(auto_now_add=True)),
-                ('link', models.CharField(max_length=255, null=True)),
-                ('file', models.CharField(max_length=255, null=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "secret_link",
+                    models.UUIDField(
+                        default=uuid.uuid4, primary_key=True, serialize=False
+                    ),
+                ),
+                ("password_hash", models.CharField(max_length=255)),
+                ("downloads", models.IntegerField(default=0)),
+                ("upload_date", models.DateTimeField(auto_now_add=True)),
+                ("link", models.CharField(max_length=255, null=True)),
+                ("file", models.CharField(max_length=255, null=True)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='SecretCounter',
+            name="SecretCounter",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateField()),
-                ('downloads', models.IntegerField(default=0)),
-                ('links', models.IntegerField(default=0)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date", models.DateField()),
+                ("downloads", models.IntegerField(default=0)),
+                ("links", models.IntegerField(default=0)),
             ],
         ),
     ]

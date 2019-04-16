@@ -30,16 +30,16 @@ def increase_counter(link=0, file=0):
 
 
 def add_secret(data, current_user, file=None):
-    secret_file = file or data.get('secret_file')
+    secret_file = file or data.get("secret_file")
     if secret_file:
         fs = FileSystemStorage()
         filename = fs.save(secret_file.name, secret_file)
         secret_file = fs.url(filename)
     secret = SafeSecret(
         user=current_user,
-        link=data.get('secret_link'),
+        link=data.get("secret_link"),
         file=secret_file,
-        password_hash=make_password(data.get('secret_password'))
+        password_hash=make_password(data.get("secret_password")),
     )
     secret.save()
     return reverse("file:getapi", kwargs={"secret_link": str(secret.secret_link)})
@@ -54,20 +54,20 @@ class FileDetailView(DetailView):
         secret = SafeSecret.objects.get(secret_link=secret_link)
         time_delta = datetime.now(tz=tzutc()) - secret.upload_date
         if time_delta.days >= 1:
-            messages.error(request, 'Link expired')
-        elif check_password(request.POST.get('password'), secret.password_hash):
+            messages.error(request, "Link expired")
+        elif check_password(request.POST.get("password"), secret.password_hash):
             secret.downloads += 1
             secret.save()
             count = "link" if secret.link else "file"
             increase_counter(**{count: 1})
             return redirect(secret.file or secret.link)
         else:
-            messages.error(request, 'Wrong Password')
+            messages.error(request, "Wrong Password")
         return super().get(request, secret_link)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'] = GetSecretForm
+        context["form"] = GetSecretForm
         return context
 
 
@@ -108,7 +108,7 @@ secret_statistcs_api_list_view = SecretStatisticsAPIView.as_view()
 
 
 class FileUploadView(LoginRequiredMixin, FormView):
-    template_name = 'file/safesecret_form.html'
+    template_name = "file/safesecret_form.html"
     model = SafeSecret
     form_class = UploadFileForm
 
@@ -150,7 +150,7 @@ class SecretAPICreateView(LoginRequiredMixin, generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         check = [
             request.data.get("secret_link"),
-            request.data.get("secret_file", request.FILES.get("file"))
+            request.data.get("secret_file", request.FILES.get("file")),
         ]
         print(request.data)
         if all(check) or not any(check):
@@ -170,16 +170,18 @@ class SecretAPIDetailsView(generics.RetrieveAPIView):
     def post(self, request, secret_link):
         secret = SafeSecret.objects.get(secret_link=secret_link)
         time_delta = datetime.now(tz=tzutc()) - secret.upload_date
-        password = request.data.get('password', '')
+        password = request.data.get("password", "")
         if time_delta.days > 1:
-            return Response({'error': 'Link expired'})
+            return Response({"error": "Link expired"})
         if check_password(password, secret.password_hash):
             secret.downloads += 1
             secret.save()
             count = "link" if secret.link else "file"
             increase_counter(**{count: 1})
-            return Response({"link": request.build_absolute_uri(secret.file or secret.link)})
-        return Response({'error': 'Wrong Password'})
+            return Response(
+                {"link": request.build_absolute_uri(secret.file or secret.link)}
+            )
+        return Response({"error": "Wrong Password"})
 
 
 file_details_api_view = SecretAPIDetailsView.as_view()

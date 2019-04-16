@@ -5,14 +5,14 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('users', '0001_initial'),
-    ]
+    dependencies = [("users", "0001_initial")]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='last_user_agent',
-            field=models.CharField(blank=True, max_length=255, verbose_name='Last time Used user agent'),
-        ),
+            model_name="user",
+            name="last_user_agent",
+            field=models.CharField(
+                blank=True, max_length=255, verbose_name="Last time Used user agent"
+            ),
+        )
     ]

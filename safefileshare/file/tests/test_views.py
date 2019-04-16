@@ -12,8 +12,12 @@ import pytest
 
 from safefileshare.file.forms import GetSecretForm
 from safefileshare.file.views import (
-    add_secret, FileDetailView, FileUploadView,
-    SecretAPICreateView, SecretAPIDetailsView, increase_counter
+    add_secret,
+    FileDetailView,
+    FileUploadView,
+    SecretAPICreateView,
+    SecretAPIDetailsView,
+    increase_counter,
 )
 from safefileshare.file.models import SafeSecret, SecretCounter
 
@@ -21,7 +25,9 @@ pytestmark = pytest.mark.django_db
 
 
 class TestIncreaseCounter:
-    def test_increase_counter(self, user: settings.AUTH_USER_MODEL, request_factory: RequestFactory):
+    def test_increase_counter(
+        self, user: settings.AUTH_USER_MODEL, request_factory: RequestFactory
+    ):
         increase_counter(link=1)
         today = str(date.today())
         counter = SecretCounter.objects.get(date=today)
@@ -34,7 +40,9 @@ class TestIncreaseCounter:
 
 
 class TestAddSecret:
-    def test_add_secret_link(self, user: settings.AUTH_USER_MODEL, request_factory: RequestFactory):
+    def test_add_secret_link(
+        self, user: settings.AUTH_USER_MODEL, request_factory: RequestFactory
+    ):
         request = request_factory.get("/fake-url/")
         request.user = user
         mock_data = {"secret_link": "http://wp.pl", "secret_password": "pass123"}
@@ -43,10 +51,12 @@ class TestAddSecret:
         uuid = resp.lstrip("/file/~api/").rstrip("/")
         print(uuid, resp)
         data = SafeSecret.objects.get(secret_link=uuid)
-        assert data.link == mock_data['secret_link']
-        assert data.password_hash != mock_data['secret_password']
+        assert data.link == mock_data["secret_link"]
+        assert data.password_hash != mock_data["secret_password"]
 
-    def test_add_secret_file(self, user: settings.AUTH_USER_MODEL, request_factory: RequestFactory):
+    def test_add_secret_file(
+        self, user: settings.AUTH_USER_MODEL, request_factory: RequestFactory
+    ):
         request = request_factory.get("/fake-url/")
         request.user = user
         file_name = "xxx.test"
@@ -57,7 +67,7 @@ class TestAddSecret:
             uuid = resp.lstrip("/file/~api/").rstrip("/")
             data = SafeSecret.objects.get(secret_link=uuid)
             assert data.file == "/media/" + file_name
-            assert data.password_hash != mock_data['secret_password']
+            assert data.password_hash != mock_data["secret_password"]
 
 
 class TestFileDetailView:
@@ -74,7 +84,7 @@ class TestFileDetailView:
         middleware.process_request(request)
         request.session.save()
         messages = FallbackStorage(request)
-        setattr(request, '_messages', messages)
+        setattr(request, "_messages", messages)
         self.request = request
 
     def test_post_happy(self):
@@ -83,14 +93,14 @@ class TestFileDetailView:
         assert isinstance(resp, HttpResponseRedirect)
         print(dir(resp))
         assert resp.status_code == 302
-        assert resp.url == self.mock_data['secret_link']
+        assert resp.url == self.mock_data["secret_link"]
 
     def test_post_unhappy_pass(self):
         self.request.POST = {"password": "aaa123"}
         resp = FileDetailView.as_view()(self.request, secret_link=self.uuid)
-        messages = list(get_messages(resp.context_data['view'].request))
+        messages = list(get_messages(resp.context_data["view"].request))
         assert len(messages) == 1
-        assert messages[0].message == 'Wrong Password'
+        assert messages[0].message == "Wrong Password"
 
     def test_post_unhappy_date(self):
         self.request.POST = {"password": "aaa123"}
@@ -98,12 +108,12 @@ class TestFileDetailView:
         secret.upload_date = datetime(year=2010, month=1, day=1, tzinfo=tzutc())
         secret.save()
         resp = FileDetailView.as_view()(self.request, secret_link=self.uuid)
-        messages = list(get_messages(resp.context_data['view'].request))
+        messages = list(get_messages(resp.context_data["view"].request))
         assert len(messages) == 1
-        assert messages[0].message == 'Link expired'
+        assert messages[0].message == "Link expired"
 
     def test_get_context_data(self):
-        self.request.GET = ''
+        self.request.GET = ""
         resp = FileDetailView.as_view()(self.request, secret_link=self.uuid)
         print(dir(resp))
         assert resp.context_data["form"] == GetSecretForm
@@ -124,7 +134,7 @@ class TestFileUploadView:
         middleware.process_request(request)
         request.session.save()
         messages = FallbackStorage(request)
-        setattr(request, '_messages', messages)
+        setattr(request, "_messages", messages)
         self.request = request
 
     def test_get_success_url(self):
@@ -135,7 +145,9 @@ class TestFileUploadView:
 
 
 class TestSecretAPICreateView:
-    def test_post(self, user: settings.AUTH_USER_MODEL, request_factory: RequestFactory):
+    def test_post(
+        self, user: settings.AUTH_USER_MODEL, request_factory: RequestFactory
+    ):
         request = request_factory.post("/file/~api/~upload")
         request.user = user
         request.method = "post"
@@ -143,18 +155,24 @@ class TestSecretAPICreateView:
 
         request.data = {"secret_link": "http://wp.pl", "secret_password": "pass123"}
         resp = SecretAPICreateView().post(request)
-        assert resp.data['link'].startswith('http://testserver/file/~api/')
+        assert resp.data["link"].startswith("http://testserver/file/~api/")
 
         request.data = {"secret_password": "pass123"}
         resp = SecretAPICreateView().post(request)
-        assert resp.data["error"] == 'You need to provide file or link, but not both.'
-        request.data = {"secret_link": "http://wp.pl", "secret_password": "pass123", "secret_file": "./xxx.test",}
+        assert resp.data["error"] == "You need to provide file or link, but not both."
+        request.data = {
+            "secret_link": "http://wp.pl",
+            "secret_password": "pass123",
+            "secret_file": "./xxx.test",
+        }
         resp = SecretAPICreateView().post(request)
-        assert resp.data["error"] == 'You need to provide file or link, but not both.'
+        assert resp.data["error"] == "You need to provide file or link, but not both."
 
 
 class TestSecretAPIDetailsView:
-    def test_post(self, user: settings.AUTH_USER_MODEL, request_factory: RequestFactory):
+    def test_post(
+        self, user: settings.AUTH_USER_MODEL, request_factory: RequestFactory
+    ):
         mock_data = {"secret_link": "http://wp.pl", "secret_password": "pass123"}
         resp = add_secret(mock_data, user)
         uuid = resp.lstrip("/file/~api/").rstrip("/")
@@ -169,6 +187,4 @@ class TestSecretAPIDetailsView:
         # unhappy
         request.data = {"password": "xxx123"}
         resp = SecretAPIDetailsView().post(request, secret_link=uuid)
-        assert resp.data["error"] == 'Wrong Password', resp.data
-
-
+        assert resp.data["error"] == "Wrong Password", resp.data
