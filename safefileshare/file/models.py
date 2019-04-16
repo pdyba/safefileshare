@@ -13,3 +13,9 @@ class SafeSecret(models.Model):
     upload_date = models.DateTimeField(auto_now_add=True)
     link = models.CharField(max_length=255, null=True)
     file = models.CharField(max_length=255, null=True)
+
+
+class SecretCounter(models.Model):
+    date = models.CharField(max_length=255)
+    downloads = models.IntegerField(default=0)
+    links = models.IntegerField(default=0)

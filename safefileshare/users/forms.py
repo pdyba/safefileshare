@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model, forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
+from allauth.account.forms import LoginForm
 
 User = get_user_model()
 
@@ -28,3 +29,10 @@ class UserCreationForm(forms.UserCreationForm):
             return username
 
         raise ValidationError(self.error_messages["duplicate_username"])
+
+
+class MyCustomLoginForm(LoginForm):
+    def login(self, req, *args, **kwargs):
+        self.user.last_user_agent = req.META.get("HTTP_USER_AGENT")
+        self.user.save()
+        return super(MyCustomLoginForm, self).login(req, *args, **kwargs)

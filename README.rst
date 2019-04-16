@@ -128,3 +128,39 @@ See detailed `cookiecutter-django Docker documentation`_.
 
 
 
+API
+^^^
+Create file:
+
+POST ./file/~api/~upload
+{
+    "secret_link": "link",
+    "secret_password": "password",
+}
+OR
+{
+    "secret_file": <file>,
+    "secret_password": "password",
+}
+Response
+{
+    "link": "obfuscated url"
+}
+Error:
+{
+    "Error": "description"
+}
+
+Get Secret
+POST ./file/~api/uuid
+{
+    "password": "password",
+}
+Response
+{
+    "link": "url"
+}
+Error:
+{
+    "Error": "description"
+}
