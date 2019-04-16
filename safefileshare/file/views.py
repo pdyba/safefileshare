@@ -2,20 +2,20 @@ from datetime import datetime, date
 from dateutil.tz import tzutc
 
 from django.contrib import messages
+from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files.storage import FileSystemStorage
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import DetailView, ListView, FormView
-from django.contrib.auth.hashers import make_password, check_password
 
 from rest_framework import generics
 from rest_framework import serializers
 from rest_framework.response import Response
 
-from safefileshare.file.models import SafeSecret, SecretCounter
 from safefileshare.file.forms import UploadFileForm
 from safefileshare.file.forms import GetSecretForm
+from safefileshare.file.models import SafeSecret, SecretCounter
 
 UPLOAD_SECRET_ERROR = "You need to provide file or link, but not both."
 
@@ -84,6 +84,27 @@ class FileListView(LoginRequiredMixin, ListView):
 
 
 file_list_view = FileListView.as_view()
+
+
+class SecretStatisticsView(LoginRequiredMixin, ListView):
+    model = SecretCounter
+
+
+secret_statistcs_list_view = SecretStatisticsView.as_view()
+
+
+class SecretStatisticsGetSerializer(serializers.Serializer):
+    date = serializers.DateField()
+    downloads = serializers.IntegerField()
+    links = serializers.IntegerField()
+
+
+class SecretStatisticsAPIView(LoginRequiredMixin, generics.ListAPIView):
+    queryset = SecretCounter.objects.all()
+    serializer_class = SecretStatisticsGetSerializer
+
+
+secret_statistcs_api_list_view = SecretStatisticsAPIView.as_view()
 
 
 class FileUploadView(LoginRequiredMixin, FormView):
