@@ -16,6 +16,9 @@ class SafeSecret(models.Model):
 
 
 class SecretCounter(models.Model):
-    date = models.CharField(max_length=255)
+    date = models.DateField()
     downloads = models.IntegerField(default=0)
     links = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.date} downloads:{self.downloads} links:{self.links}"

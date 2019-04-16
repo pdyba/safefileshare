@@ -54,7 +54,16 @@ Migrations:
 ::
 
     $ docker-compose -f local.yml run --rm django python manage.py makemigrations
+    $ docker-compose -f local.yml run --rm django python manage.py migrate
 
+
+Local
+^^^^^
+
+(after creating venv)
+    $ pip install -r requirements/local.txt
+    $ createdb <what you have entered as the project_slug at setup stage> -U postgres --password <password>
+    $ export DATABASE_URL=postgres://postgres:<password>@127.0.0.1:5432/<DB name given to createdb>
 
 
 Setting Up Your Users
@@ -130,6 +139,9 @@ See detailed `cookiecutter-django Docker documentation`_.
 
 API
 ^^^
+
+Note: Paths should be done much better.
+
 Create file:
 
 POST ./file/~api/~upload
@@ -152,7 +164,7 @@ Error:
 }
 
 Get Secret
-POST ./file/~api/uuid
+POST ./file/~api/<uuid>
 {
     "password": "password",
 }

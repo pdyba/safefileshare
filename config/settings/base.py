@@ -128,6 +128,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "safefileshare.middlewares.UserAgentMiddleware",
 ]
+MIDDLEWARE_CLASSES = MIDDLEWARE
 
 # STATIC
 # ------------------------------------------------------------------------------

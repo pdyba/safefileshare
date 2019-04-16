@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from dateutil.tz import tzutc
 
 from django.contrib import messages
@@ -13,11 +13,20 @@ from rest_framework import generics
 from rest_framework import serializers
 from rest_framework.response import Response
 
-from safefileshare.file.models import SafeSecret
+from safefileshare.file.models import SafeSecret, SecretCounter
 from safefileshare.file.forms import UploadFileForm
 from safefileshare.file.forms import GetSecretForm
 
 UPLOAD_SECRET_ERROR = "You need to provide file or link, but not both."
+
+
+def increase_counter(link=0, file=0):
+    today = str(date.today())
+    updated, created = SecretCounter.objects.get_or_create(date=today)
+    counter = updated or created
+    counter.downloads += file
+    counter.links += link
+    counter.save()
 
 
 def add_secret(data, current_user, file=None):
@@ -49,6 +58,8 @@ class FileDetailView(DetailView):
         elif check_password(request.POST.get('password'), secret.password_hash):
             secret.downloads += 1
             secret.save()
+            count = "link" if secret.link else "file"
+            increase_counter(**{count: 1})
             return redirect(secret.file or secret.link)
         else:
             messages.error(request, 'Wrong Password')
@@ -67,6 +78,9 @@ class FileListView(LoginRequiredMixin, ListView):
     model = SafeSecret
     slug_field = "file"
     slug_url_kwarg = "file"
+
+    def get_queryset(self):
+        return SafeSecret.objects.filter(user=self.request.user)
 
 
 file_list_view = FileListView.as_view()
@@ -98,8 +112,6 @@ file_upload_view = FileUploadView.as_view()
 
 class SecretGetSerializer(serializers.Serializer):
     user = serializers.CharField(max_length=255)
-    link = serializers.CharField(max_length=255)
-    file = serializers.CharField(max_length=255)
     upload_date = serializers.DateTimeField()
 
 
@@ -109,7 +121,7 @@ class SecretPostSerializer(serializers.Serializer):
     secret_file = serializers.FileField()
 
 
-class SecretAPICreateView(generics.CreateAPIView):
+class SecretAPICreateView(LoginRequiredMixin, generics.CreateAPIView):
     queryset = SafeSecret
     lookup_field = "secret_link"
     serializer_class = SecretPostSerializer
@@ -119,9 +131,10 @@ class SecretAPICreateView(generics.CreateAPIView):
             request.data.get("secret_link"),
             request.data.get("secret_file", request.FILES.get("file"))
         ]
+        print(request.data)
         if all(check) or not any(check):
             return Response({"error": UPLOAD_SECRET_ERROR})
-        link = add_secret(request.data, self.request.user, file=request.FILES.get("file"))
+        link = add_secret(request.data, request.user, file=request.FILES.get("file"))
         return Response({"link": request.build_absolute_uri(link)})
 
 
@@ -142,6 +155,8 @@ class SecretAPIDetailsView(generics.RetrieveAPIView):
         if check_password(password, secret.password_hash):
             secret.downloads += 1
             secret.save()
+            count = "link" if secret.link else "file"
+            increase_counter(**{count: 1})
             return Response({"link": request.build_absolute_uri(secret.file or secret.link)})
         return Response({'error': 'Wrong Password'})
 
