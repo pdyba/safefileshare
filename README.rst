@@ -176,3 +176,16 @@ Error:
 {
     "Error": "description"
 }
+
+Get Statistics
+GET ./file/~api/~statistics/
+Response
+[
+    {
+        "date": "2019-04-22"
+        "downloads": 1
+        "links": 1
+    }
+]
+
+
