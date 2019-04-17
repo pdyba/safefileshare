@@ -12,7 +12,7 @@ class SafeSecret(models.Model):
     downloads = models.IntegerField(default=0)
     upload_date = models.DateTimeField(auto_now_add=True)
     link = models.CharField(max_length=255, null=True)
-    file = models.CharField(max_length=255, null=True)
+    file = models.FileField(null=True)
 
 
 class SecretCounter(models.Model):

@@ -146,6 +146,7 @@ STATICFILES_FINDERS = [
 
 # MEDIA
 # ------------------------------------------------------------------------------
+USE_S3 = False
 # https://docs.djangoproject.com/en/dev/ref/settings/#media-root
 MEDIA_ROOT = str(APPS_DIR("media"))
 # https://docs.djangoproject.com/en/dev/ref/settings/#media-url

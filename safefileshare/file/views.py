@@ -1,6 +1,7 @@
 from datetime import datetime, date
 from dateutil.tz import tzutc
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -12,6 +13,7 @@ from django.views.generic import DetailView, ListView, FormView
 from rest_framework import generics
 from rest_framework import serializers
 from rest_framework.response import Response
+
 
 from safefileshare.file.forms import UploadFileForm
 from safefileshare.file.forms import GetSecretForm
@@ -32,9 +34,12 @@ def increase_counter(link=0, file=0):
 def add_secret(data, current_user, file=None):
     secret_file = file or data.get("secret_file")
     if secret_file:
-        fs = FileSystemStorage()
-        filename = fs.save(secret_file.name, secret_file)
-        secret_file = fs.url(filename)
+        if settings.USE_S3:
+            pass
+        else:
+            fs = FileSystemStorage()
+            secret_file = fs.save(secret_file.name, secret_file)
+            # secret_file = fs.url(filename)
     secret = SafeSecret(
         user=current_user,
         link=data.get("secret_link"),
@@ -60,7 +65,7 @@ class FileDetailView(DetailView):
             secret.save()
             count = "link" if secret.link else "file"
             increase_counter(**{count: 1})
-            return redirect(secret.file or secret.link)
+            return redirect(secret.file.url or secret.link)
         else:
             messages.error(request, "Wrong Password")
         return super().get(request, secret_link)
